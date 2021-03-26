@@ -90,7 +90,7 @@ jobs:
 
       - name: Run black
         shell: bash
-        run: python -m poetry run black fastapiauth tests--check
+        run: python -m poetry run black fastapiauth tests --check
       
       - name: If needed, commit black changes to the pull request
         if: failure()
