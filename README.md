@@ -1,5 +1,7 @@
 # FastAPI Auth
 
+**This is a WIP and should not be used in production**
+
 Authenticate users with FastAPI using the [Microsoft MSAL Library](https://msal-python.readthedocs.io/en/latest/) and Azure Active Directory.
 
 ## Getting started
