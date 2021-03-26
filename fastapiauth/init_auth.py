@@ -30,6 +30,7 @@ def init_auth(app: FastAPI, home_name: str = "home") -> None:
     # Add routes for logging in and generating access token
     app.include_router(auth_router, tags=["auth"])
 
+    # pylint: disable=W0612
     @app.exception_handler(RequiresLoginException)
     async def exception_handler(
         request: Request, _: RequiresLoginException

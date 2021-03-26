@@ -82,7 +82,7 @@ jobs:
     
       - name: Run pylint
         shell: bash
-        run: python -m poetry run pylint --rcfile=.github/linters/.python-lint fastapiauth tests
+        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapiauth tests
     
       - name: Run flake8
         shell: bash

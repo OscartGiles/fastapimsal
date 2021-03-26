@@ -1,10 +1,8 @@
 """Configurations"""
 
 from uuid import UUID
-from typing import Optional
 from pydantic import BaseSettings, HttpUrl, SecretStr
 from fastapi.requests import Request
-from fastapi.responses import Response, RedirectResponse
 
 
 class AuthSettings(BaseSettings):
@@ -30,8 +28,6 @@ class AuthSettings(BaseSettings):
 
 class RequiresLoginException(Exception):
     """Exception to raise when login required"""
-
-    pass
 
 
 class UserLogged:

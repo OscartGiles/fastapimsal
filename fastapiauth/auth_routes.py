@@ -64,7 +64,7 @@ async def authorized(request: Request) -> RedirectResponse:
         request.session.get("flow", {}), dict(request.query_params)
     )
 
-    # ToDo: Implement a cache for the access token and refresh token so we don't have to get a new token every time.
+    # TODO: Implement a cache for the access token and refresh token so we don't have to get a new token every time.
     # Because we don't check tokens on other routes removing a user from AAD will only take effect when their session cookie expires
     # Session cache should implement a fix.
 
