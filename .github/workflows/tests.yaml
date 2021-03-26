@@ -1,0 +1,105 @@
+---
+
+name: All checks and tests
+
+on: 
+  pull_request:
+    branches: 
+      - main
+
+
+###############
+# Set the Job #
+###############
+jobs:
+
+  # Label of the runner job
+  runner-job:
+    # You must use a Linux environment when using service containers or container jobs
+    runs-on: ubuntu-latest
+
+    ##################
+    # Load all steps #
+    ##################
+    steps:
+
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+
+      ##########################
+      # Checkout the code base #
+      ##########################
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+
+      ################
+      # Setup Python #
+      ################
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
+
+      - name: Bootstrap poetry
+        shell: bash
+        run: |
+          python -m ensurepip
+          python -m pip install --upgrade pip
+          python -m pip install poetry
+      - name: Configure poetry
+        shell: bash
+        run: |
+          python -m poetry config virtualenvs.in-project true
+      - name: Set up cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Ensure cache is healthy
+        if: steps.cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: timeout 10s python -m poetry run pip --version || rm -rf .venv
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m poetry install
+
+      # - name: Run tests
+      #   shell: bash
+      #   run: |
+      #     poetry run pytest
+
+      - name: Run mypy
+        shell: bash
+        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapiauth tests
+    
+      - name: Run pylint
+        shell: bash
+        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapiauth tests
+    
+      - name: Run flake8
+        shell: bash
+        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapiauth tests
+
+      - name: Run black
+        shell: bash
+        run: python -m poetry run black fastapiauth tests --check
+      
+      - name: If needed, commit black changes to the pull request
+        if: failure()
+        run: |
+          poetry run black fastapiauth tests
+          git config --global user.name 'autoblack'
+          git config --global user.email 'ogiles@turing.ac.uk'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git checkout $GITHUB_HEAD_REF
+          git commit -am "fixup: Format Python code with Black"
+          git push
