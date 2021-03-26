@@ -67,12 +67,11 @@ async def authorized(request: Request):
     # Cache user info on session cookie
     request.session["user"] = result.get("id_token_claims")
 
-    return RedirectResponse(url=request.url_for("dash"))
+    return RedirectResponse(url=request.url_for("home"))
 
 
 @router.route("/logout", include_in_schema=False)
 async def logout(request: Request, _=Depends(logged_in)):
 
     request.session.pop("user", None)
-    # request.session.pop("tokens", None)
     return RedirectResponse(url=request.url_for("home"))

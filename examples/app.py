@@ -2,11 +2,12 @@
 Basic example of authenticating users with OAuth2 using Microsoft's MSAL library.
 Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms-identity-python-webapp
 """
-
-from fastapi import FastAPI, Depends
-from fastapi.responses import HTMLResponse
+from typing import Union
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 import fastapiauth
-from fastapiauth import logged_in
 
 # Notice all docs are removed. We can add behind auth later
 app = FastAPI(
@@ -25,12 +26,41 @@ fastapiauth.init_auth(app)
 app.include_router(fastapiauth.auth_router, tags=["auth"])
 
 
+# Add home pages
 @app.get("/", include_in_schema=False)
-async def home():
-    return HTMLResponse('<a href="/login">login</a>')
+async def home(request: Request):
+
+    user = request.session.get("user", None)
+    if not user:
+        return HTMLResponse('<a href="/login">login</a>')
+
+    return HTMLResponse("<h1>You are signed in</h1><a href='/logout'>logout</a>")
 
 
-@app.get("/dash", include_in_schema=False)
-async def dash(user=Depends(logged_in)):
+# Place docs behind auth
+@app.get("/openapi.json", include_in_schema=False)
+async def get_open_api_endpoint(
+    _: dict = Depends(fastapiauth.logged_in),
+) -> Union[JSONResponse, HTMLResponse]:
+    """
+    Serves OpenAPI endpoints
+    """
+    return JSONResponse(
+        get_openapi(title="Example API", version="0.0.1", routes=app.routes)
+    )
 
-    return HTMLResponse("<h1>You are signed in</h1>")
+
+@app.get("/docs", include_in_schema=False)
+async def get_documentation(_: dict = Depends(fastapiauth.logged_in)) -> HTMLResponse:
+    """
+    Serves swagger API docs
+    """
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def get_redocumentation(_: dict = Depends(fastapiauth.logged_in)) -> HTMLResponse:
+    """
+    Serves redoc API docs
+    """
+    return get_redoc_html(openapi_url="/openapi.json", title="docs")
