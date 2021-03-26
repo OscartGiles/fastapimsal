@@ -13,7 +13,7 @@ class AuthSettings(BaseSettings):
     client_id: UUID
     client_secret: SecretStr
     tenant_id: UUID
-    base_url: HttpUrl = "https://login.microsoftonline.com/"
+    base_url: HttpUrl = "https://login.microsoftonline.com/"  # type: ignore
     session_secret: SecretStr
     session_expire_time_minutes: int
     https_only: bool = True

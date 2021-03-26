@@ -8,7 +8,7 @@ from .auth_routes import router as auth_router
 AUTH_SETTINGS = AuthSettings()
 
 
-def init_auth(app: FastAPI, home_name: str = "home"):
+def init_auth(app: FastAPI, home_name: str = "home") -> None:
     """Initialise the auth
 
     Args:

@@ -1,7 +1,7 @@
 """
 Authentication with Azure Active Directory
 """
-
+from typing import Any, List
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 import msal
@@ -11,7 +11,9 @@ router = APIRouter()
 auth_settings = AuthSettings()
 
 
-def _build_msal_app(cache=None, authority=None):
+def _build_msal_app(
+    cache: Any = None, authority: str = None
+) -> msal.ConfidentialClientApplication:
     return msal.ConfidentialClientApplication(
         str(auth_settings.client_id),
         authority=authority or auth_settings.authority,
@@ -20,7 +22,7 @@ def _build_msal_app(cache=None, authority=None):
     )
 
 
-def _auth_uri(request: Request):
+def _auth_uri(request: Request) -> str:
 
     redirect_uri = request.url_for("authorized")
 
@@ -32,7 +34,9 @@ def _auth_uri(request: Request):
     return redirect_uri
 
 
-def _auth_code_flow(request: Request, authority=None, scopes=None):
+def _auth_code_flow(
+    request: Request, authority: str = None, scopes: List[str] = None
+) -> str:
 
     flow = _build_msal_app(authority=authority).initiate_auth_code_flow(
         scopes or [], redirect_uri=_auth_uri(request)
@@ -43,7 +47,7 @@ def _auth_code_flow(request: Request, authority=None, scopes=None):
 
 
 @router.route("/login", include_in_schema=False)
-async def login(request: Request):
+async def login(request: Request) -> RedirectResponse:
 
     flow_uri = _auth_code_flow(request)
 
@@ -54,7 +58,7 @@ async def login(request: Request):
     "/getAToken",
     include_in_schema=False,
 )  # Its absolute URL must match your app's redirect_uri set in AAD
-async def authorized(request: Request):
+async def authorized(request: Request) -> RedirectResponse:
 
     result = _build_msal_app().acquire_token_by_auth_code_flow(
         request.session.get("flow", {}), dict(request.query_params)
@@ -71,7 +75,7 @@ async def authorized(request: Request):
 
 
 @router.route("/logout", include_in_schema=False)
-async def logout(request: Request, _=Depends(logged_in)):
+async def logout(request: Request, _: Any = Depends(logged_in)) -> RedirectResponse:
 
     request.session.pop("user", None)
     return RedirectResponse(url=request.url_for("home"))
