@@ -19,11 +19,8 @@ app = FastAPI(
     openapi_url=None,
 )
 
-# Add session middleware
+# Add session middleware and authentication routes
 fastapiauth.init_auth(app)
-
-# Add routes for logging in and generating access token
-app.include_router(fastapiauth.auth_router, tags=["auth"])
 
 
 # Add home pages
@@ -34,7 +31,9 @@ async def home(request: Request):
     if not user:
         return HTMLResponse('<a href="/login">login</a>')
 
-    return HTMLResponse("<h1>You are signed in</h1><a href='/logout'>logout</a>")
+    return HTMLResponse(
+        "<h1>You are signed in</h1> <a href='/docs'>Docs</a> <a href='/redoc'>Redoc</a> <a href='/logout'>Logout</a>"
+    )
 
 
 # Place docs behind auth

@@ -4,4 +4,14 @@ Authenticate users with FastAPI using the [Microsoft MSAL Library](https://msal-
 
 ## Getting started
 
-See [examples/app.py](examples/app.py) for a simple example. 
+See [examples/app.py](examples/app.py) for a simple example.
+
+Create a `.env` file:
+
+```bash
+echo "session_expire_time_minutes=1
+session_secret=<Session-Cookie-Secret>
+client_id=<Application-client-id>
+client_secret=<Application-Client-secret>
+tenant_id=<Tenant-id" > .env
+```
