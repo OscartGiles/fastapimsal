@@ -79,24 +79,24 @@ jobs:
 
       - name: Run mypy
         shell: bash
-        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapiauth tests
+        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapimsal tests
     
       - name: Run pylint
         shell: bash
-        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapiauth tests
+        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapimsal tests
     
       - name: Run flake8
         shell: bash
-        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapiauth tests
+        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapimsal tests
 
       - name: Run black
         shell: bash
-        run: python -m poetry run black fastapiauth tests --check
+        run: python -m poetry run black fastapimsal tests --check
       
       - name: If needed, commit black changes to the pull request
         if: failure()
         run: |
-          poetry run black fastapiauth tests
+          poetry run black fastapimsal tests
           git config --global user.name 'autoblack'
           git config --global user.email 'ogiles@turing.ac.uk'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY

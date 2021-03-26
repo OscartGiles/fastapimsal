@@ -78,4 +78,5 @@ async def authorized(request: Request) -> RedirectResponse:
 async def logout(request: Request, _: Any = Depends(logged_in)) -> RedirectResponse:
 
     request.session.pop("user", None)
+    request.session.pop("flow", None)
     return RedirectResponse(url=request.url_for("home"))

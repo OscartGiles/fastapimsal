@@ -7,7 +7,7 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.openapi.utils import get_openapi
-import fastapiauth
+import fastapimsal
 
 # Notice all docs are removed. We can add behind auth later
 app = FastAPI(
@@ -20,7 +20,7 @@ app = FastAPI(
 )
 
 # Add session middleware and authentication routes
-fastapiauth.init_auth(app)
+fastapimsal.init_auth(app)
 
 
 # Add home pages
@@ -39,7 +39,7 @@ async def home(request: Request):
 # Place docs behind auth
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint(
-    _: dict = Depends(fastapiauth.logged_in),
+    _: dict = Depends(fastapimsal.logged_in),
 ) -> Union[JSONResponse, HTMLResponse]:
     """
     Serves OpenAPI endpoints
@@ -50,7 +50,7 @@ async def get_open_api_endpoint(
 
 
 @app.get("/docs", include_in_schema=False)
-async def get_documentation(_: dict = Depends(fastapiauth.logged_in)) -> HTMLResponse:
+async def get_documentation(_: dict = Depends(fastapimsal.logged_in)) -> HTMLResponse:
     """
     Serves swagger API docs
     """
@@ -58,7 +58,7 @@ async def get_documentation(_: dict = Depends(fastapiauth.logged_in)) -> HTMLRes
 
 
 @app.get("/redoc", include_in_schema=False)
-async def get_redocumentation(_: dict = Depends(fastapiauth.logged_in)) -> HTMLResponse:
+async def get_redocumentation(_: dict = Depends(fastapimsal.logged_in)) -> HTMLResponse:
     """
     Serves redoc API docs
     """
