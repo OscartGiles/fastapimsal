@@ -8,18 +8,6 @@ from fastapi.requests import Request
 from fastapi.responses import Response, RedirectResponse
 
 
-class AuthTokenSettings(BaseSettings):
-    """Settings for generating jwt tokens"""
-
-    access_token_secret: SecretStr
-    access_token_algorithm: str = "HS256"
-    access_token_expire_minutes: int
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-
-
 class AuthSettings(BaseSettings):
     """Settings class"""
 

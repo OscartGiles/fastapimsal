@@ -76,36 +76,3 @@ async def logout(request: Request, _=Depends(logged_in)):
     request.session.pop("user", None)
     # request.session.pop("tokens", None)
     return RedirectResponse(url=request.url_for("home"))
-
-
-# # Define Authentication Routes
-# def create_access_token(data: dict, expires_delta: timedelta):
-#     to_encode = data.copy()
-#     expire = datetime.utcnow() + expires_delta
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(
-#         to_encode,
-#         auth_settings.access_token_secret.get_secret_value(),
-#         algorithm=auth_settings.access_token_algorithm,
-#     )
-#     return encoded_jwt
-
-
-# @router.get("/token", response_model=Token, include_in_schema=False)
-# def token(user=Depends(logged_in)):
-
-#     access_token_expires = timedelta(minutes=auth_settings.access_token_expire_minutes)
-
-#     access_token = create_access_token(
-#         data={"sub": user["preferred_username"], "roles": user["groups"]},
-#         expires_delta=access_token_expires,
-#     )
-#     return {"access_token": access_token, "token_type": "bearer"}
-
-
-# @router.get("/user", include_in_schema=False)
-# async def user_home(request: Request, user=Depends(logged_in)):
-
-#     return auth_templates.TemplateResponse(
-#         "auth.html", {"request": request, "user": user}
-#     )
