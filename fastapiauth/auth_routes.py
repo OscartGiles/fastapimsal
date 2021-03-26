@@ -4,30 +4,23 @@ Authentication with Azure Active Directory
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client import OAuth
+import msal
 from .config import AuthSettings, logged_in
 
 router = APIRouter()
 auth_settings = AuthSettings()
 
-# Register Azure AAD
-oauth = OAuth()
-oauth.register(
-    name="azure",
-    client_id=str(auth_settings.client_id),
-    client_secret=auth_settings.client_secret.get_secret_value(),
-    access_token_url=auth_settings.authority + "/oauth2/v2.0/token",
-    access_token_params=None,
-    authorize_url=auth_settings.authority + "/oauth2/v2.0/authorize",
-    authorize_params=None,
-    client_kwargs={"scope": "openid offline_access profile"},
-    server_metadata_url=auth_settings.authority
-    + "/v2.0/.well-known/openid-configuration",
-)
+
+def _build_msal_app(cache=None, authority=None):
+    return msal.ConfidentialClientApplication(
+        str(auth_settings.client_id),
+        authority=authority or auth_settings.authority,
+        client_credential=auth_settings.client_secret.get_secret_value(),
+        token_cache=cache,
+    )
 
 
-@router.route("/login", include_in_schema=False)
-async def login(request: Request):
+def _auth_uri(request: Request):
 
     redirect_uri = request.url_for("authorized")
 
@@ -36,7 +29,25 @@ async def login(request: Request):
     if "http://127.0.0.1" in redirect_uri:
         redirect_uri = redirect_uri.replace("http://127.0.0.1", "http://localhost")
 
-    return await oauth.azure.authorize_redirect(request, redirect_uri)
+    return redirect_uri
+
+
+def _auth_code_flow(request: Request, authority=None, scopes=None):
+
+    flow = _build_msal_app(authority=authority).initiate_auth_code_flow(
+        scopes or [], redirect_uri=_auth_uri(request)
+    )
+    request.session["flow"] = flow
+
+    return flow["auth_uri"]
+
+
+@router.route("/login", include_in_schema=False)
+async def login(request: Request):
+
+    flow_uri = _auth_code_flow(request)
+
+    return RedirectResponse(url=flow_uri)
 
 
 @router.get(
@@ -45,11 +56,16 @@ async def login(request: Request):
 )  # Its absolute URL must match your app's redirect_uri set in AAD
 async def authorized(request: Request):
 
-    print(request.scope)
-    token = await oauth.azure.authorize_access_token(request)
-    user = await oauth.azure.parse_id_token(request, token)
+    result = _build_msal_app().acquire_token_by_auth_code_flow(
+        request.session.get("flow", {}), dict(request.query_params)
+    )
 
-    request.session["user"] = dict(user)
+    # ToDo: Implement a cache for the access token and refresh token so we don't have to get a new token every time.
+    # Because we don't check tokens on other routes removing a user from AAD will only take effect when their session cookie expires
+    # Session cache should implement a fix.
+
+    # Cache user info on session cookie
+    request.session["user"] = result.get("id_token_claims")
 
     return RedirectResponse(url=request.url_for("dash"))
 

@@ -55,10 +55,7 @@ class UserLogged:
 
     async def __call__(self, request: Request) -> dict:
 
-        user = request.session.get("user")
-
-        print(request.session)
-        # print(user)
+        user = request.session.get("user", None)
 
         if user:
             return user
@@ -76,7 +73,7 @@ def init_auth(app, home_name="home"):
         secret_key=AUTH_SETTINGS.session_secret.get_secret_value(),
         max_age=AUTH_SETTINGS.session_expire_time_minutes * 60,
         https_only=AUTH_SETTINGS.https_only,
-        session_cookie="home",
+        session_cookie="session",
     )
 
     @app.exception_handler(RequiresLoginException)

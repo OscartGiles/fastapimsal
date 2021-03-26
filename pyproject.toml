@@ -6,11 +6,10 @@ authors = ["Oscar Giles <ogiles@turing.ac.uk>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-Authlib = "^0.15.3"
 fastapi = {extras = ["all"], version = "^0.63.0"}
 pydantic = "^1.8.1"
 python-jose = {extras = ["cryptography"], version = "^3.2.0"}
-httpx = "^0.17.1"
+msal = "^1.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
