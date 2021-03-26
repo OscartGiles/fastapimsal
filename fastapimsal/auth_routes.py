@@ -41,6 +41,7 @@ def _auth_code_flow(
     flow = _build_msal_app(authority=authority).initiate_auth_code_flow(
         scopes or [], redirect_uri=_auth_uri(request)
     )
+
     request.session["flow"] = flow
 
     return flow["auth_uri"]
@@ -51,7 +52,7 @@ async def login(request: Request) -> RedirectResponse:
 
     flow_uri = _auth_code_flow(request)
 
-    return RedirectResponse(url=flow_uri)
+    return RedirectResponse(url=flow_uri, status_code=302)
 
 
 @router.get(
@@ -60,18 +61,25 @@ async def login(request: Request) -> RedirectResponse:
 )  # Its absolute URL must match your app's redirect_uri set in AAD
 async def authorized(request: Request) -> RedirectResponse:
 
-    result = _build_msal_app().acquire_token_by_auth_code_flow(
-        request.session.get("flow", {}), dict(request.query_params)
-    )
+    # see https://github.com/Azure-Samples/ms-identity-python-webapp/blob/e342e93a2a7e0cc4d4955c20660e6a81fd2536c5/app.py#L35-L45
+    # for try except pattern. Kind of annoying, means you may have to click sign in twice
+    try:
+
+        result = _build_msal_app().acquire_token_by_auth_code_flow(
+            request.session.get("flow", {}), dict(request.query_params)
+        )
+        request.session["user"] = result.get("id_token_claims")
+
+    except ValueError:
+        pass
 
     # TODO: Implement a cache for the access token and refresh token so we don't have to get a new token every time.
     # Because we don't check tokens on other routes removing a user from AAD will only take effect when their session cookie expires
     # Session cache should implement a fix.
 
     # Cache user info on session cookie
-    request.session["user"] = result.get("id_token_claims")
 
-    return RedirectResponse(url=request.url_for("home"))
+    return RedirectResponse(url=request.url_for("home"), status_code=302)
 
 
 @router.route("/logout", include_in_schema=False)
