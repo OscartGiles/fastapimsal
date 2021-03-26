@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "fastapiAuth"
 version = "0.1.0"
-description = ""
+description = "Library to authenticate users using MSAL"
 authors = ["Oscar Giles <ogiles@turing.ac.uk>"]
 
 [tool.poetry.dependencies]

@@ -44,7 +44,6 @@ class UserLogged:
     async def __call__(self, request: Request) -> dict:
 
         user = request.session.get("user", None)
-
         if user:
             return user
         raise RequiresLoginException

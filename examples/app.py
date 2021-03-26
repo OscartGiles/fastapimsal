@@ -1,5 +1,10 @@
+"""
+Basic example of authenticating users with OAuth2 using Microsoft's MSAL library.
+Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms-identity-python-webapp
+"""
+
 from fastapi import FastAPI, Depends
-from fastapi.responses import Response, HTMLResponse
+from fastapi.responses import HTMLResponse
 import fastapiauth
 from fastapiauth import logged_in
 
