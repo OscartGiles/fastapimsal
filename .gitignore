@@ -1,4 +1,4 @@
 */__pycache__
 .mypy_cache
 .vscode
-.env
+.auth.env

@@ -22,7 +22,7 @@ class AuthSettings(BaseSettings):
         return self.base_url + str(self.tenant_id)
 
     class Config:
-        env_file = ".env"
+        env_file = ".auth.env"
         env_file_encoding = "utf-8"
 
 

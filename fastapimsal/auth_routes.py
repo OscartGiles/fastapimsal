@@ -55,8 +55,7 @@ async def login(request: Request) -> RedirectResponse:
 
 
 @router.get(
-    "/getAToken",
-    include_in_schema=False,
+    "/getAToken", include_in_schema=False,
 )  # Its absolute URL must match your app's redirect_uri set in AAD
 async def authorized(request: Request) -> RedirectResponse:
 
@@ -78,4 +77,5 @@ async def authorized(request: Request) -> RedirectResponse:
 async def logout(request: Request, _: Any = Depends(logged_in)) -> RedirectResponse:
 
     request.session.pop("user", None)
+    request.session.pop("flow", None)
     return RedirectResponse(url=request.url_for("home"))
