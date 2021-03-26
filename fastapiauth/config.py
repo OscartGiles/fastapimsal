@@ -79,14 +79,6 @@ def init_auth(app, home_name="home"):
         session_cookie="home",
     )
 
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=AUTH_SETTINGS.session_secret.get_secret_value(),
-        max_age=AUTH_SETTINGS.session_expire_time_minutes * 60,
-        https_only=AUTH_SETTINGS.https_only,
-        session_cookie="clear",
-    )
-
     @app.exception_handler(RequiresLoginException)
     async def exception_handler(
         request: Request, _: RequiresLoginException

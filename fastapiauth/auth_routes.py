@@ -45,10 +45,12 @@ async def login(request: Request):
 )  # Its absolute URL must match your app's redirect_uri set in AAD
 async def authorized(request: Request):
 
+    print(request.scope)
     token = await oauth.azure.authorize_access_token(request)
     user = await oauth.azure.parse_id_token(request, token)
 
     request.session["user"] = dict(user)
+
     return RedirectResponse(url=request.url_for("dash"))
 
 
