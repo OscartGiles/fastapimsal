@@ -17,3 +17,5 @@ client_id=<Application-client-id>
 client_secret=<Application-Client-secret>
 tenant_id=<Tenant-id" > .env
 ```
+
+For the `session_secret` its a good idea to create a secret with `openssl rand -hex 32`
