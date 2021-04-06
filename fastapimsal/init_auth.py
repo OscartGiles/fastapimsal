@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import Response, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
-from .config import AuthSettings, RequiresLoginException
+from .config import get_auth_settings, RequiresLoginException
 from .auth_routes import router as auth_router
 
-AUTH_SETTINGS = AuthSettings()
+AUTH_SETTINGS = get_auth_settings()
 
 
 def init_auth(app: FastAPI, home_name: str = "home") -> None:

@@ -2,6 +2,7 @@
 
 from uuid import UUID
 from pydantic import BaseSettings, HttpUrl, SecretStr
+from functools import lru_cache
 from fastapi.requests import Request
 
 
@@ -24,6 +25,12 @@ class AuthSettings(BaseSettings):
     class Config:
         env_file = ".auth.env"
         env_file_encoding = "utf-8"
+
+
+@lru_cache()
+def get_auth_settings():
+
+    return AuthSettings()
 
 
 class RequiresLoginException(Exception):
