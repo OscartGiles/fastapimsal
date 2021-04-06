@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.requests import Request
-from fastapi.responses import Response, RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
-from .config import get_auth_settings, RequiresLoginException
+
 from .auth_routes import router as auth_router
+from .config import RequiresLoginException, get_auth_settings
 
 AUTH_SETTINGS = get_auth_settings()
 

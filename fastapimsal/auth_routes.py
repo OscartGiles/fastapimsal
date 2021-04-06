@@ -2,9 +2,11 @@
 Authentication with Azure Active Directory
 """
 from typing import Any, List
+
+import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-import msal
+
 from .config import AuthSettings, logged_in
 
 router = APIRouter()

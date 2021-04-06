@@ -1,9 +1,10 @@
 """Configurations"""
 
-from uuid import UUID
-from pydantic import BaseSettings, HttpUrl, SecretStr
 from functools import lru_cache
+from uuid import UUID
+
 from fastapi.requests import Request
+from pydantic import BaseSettings, HttpUrl, SecretStr
 
 
 class AuthSettings(BaseSettings):
@@ -28,7 +29,7 @@ class AuthSettings(BaseSettings):
 
 
 @lru_cache()
-def get_auth_settings():
+def get_auth_settings() -> AuthSettings:
 
     return AuthSettings()
 
