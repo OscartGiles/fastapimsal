@@ -10,6 +10,7 @@ fastapi = "^0.63.0"
 pydantic = "^1.8.1"
 python-jose = {extras = ["cryptography"], version = "^3.2.0"}
 msal = "^1.10.0"
+itsdangerous = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

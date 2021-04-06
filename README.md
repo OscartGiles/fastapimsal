@@ -8,7 +8,7 @@ Authenticate users with FastAPI using the [Microsoft MSAL Library](https://msal-
 
 See [examples/app.py](examples/app.py) for a simple example.
 
-Create a `.env` file:
+Create a `.auth.env` file:
 
 ```bash
 echo "session_expire_time_minutes=1
