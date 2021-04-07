@@ -143,7 +143,7 @@ def create_auth_router(
         # see https://github.com/Azure-Samples/ms-identity-python-webapp/blob/e342e93a2a7e0cc4d4955c20660e6a81fd2536c5/app.py#L35-L45
         # for try except pattern. Kind of annoying, means you may have to click sign in twice
         try:
-            cache = await f_load_cache(None)
+            cache = msal.SerializableTokenCache()
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
                 request.session.get("flow", {}), dict(request.query_params)
             )
