@@ -12,14 +12,16 @@ from .config import get_auth_settings
 AUTH_SETTINGS = get_auth_settings()
 
 
-def default_load_cache(oid: Optional[str] = None) -> None:
+async def default_load_cache(oid: Optional[str] = None) -> None:
     "Function that returns None"
 
     return None
 
 
 # pylint: disable=W0613
-def default_save_cache(oid: str, cache: Optional[msal.SerializableTokenCache]) -> None:
+async def default_save_cache(
+    oid: str, cache: Optional[msal.SerializableTokenCache]
+) -> None:
     return None
 
 

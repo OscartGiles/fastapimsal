@@ -24,7 +24,6 @@ class UserLogged:
 
         user = request.session.get("user", None)
         if user:
-            print(user)
             return user
         raise RequiresLoginException
 
@@ -52,15 +51,17 @@ class UserLoggedValidated:
         self.f_load_cache = f_load_cache
         self.f_save_cache = f_save_cache
 
-    def get_token_from_cache(
+    async def get_token_from_cache(
         self, oid, scope: Optional[List[str]] = None
     ) -> Optional[Dict[Any, Any]]:
-        cache = self.f_load_cache(oid)  # This web app maintains one cache per session
+        cache = await self.f_load_cache(
+            oid
+        )  # This web app maintains one cache per session
         cca = build_msal_app(cache=cache)
         accounts = cca.get_accounts()
         if accounts:  # So all account(s) belong to the current signed-in user
             result = cca.acquire_token_silent(scope, account=accounts[0])
-            self.f_save_cache(oid, cache)
+            await self.f_save_cache(oid, cache)
             return result
 
         return None
@@ -142,7 +143,7 @@ def create_auth_router(
         # see https://github.com/Azure-Samples/ms-identity-python-webapp/blob/e342e93a2a7e0cc4d4955c20660e6a81fd2536c5/app.py#L35-L45
         # for try except pattern. Kind of annoying, means you may have to click sign in twice
         try:
-            cache = f_load_cache(None)
+            cache = await f_load_cache(None)
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
                 request.session.get("flow", {}), dict(request.query_params)
             )
@@ -150,7 +151,7 @@ def create_auth_router(
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
             oid = result.get("id_token_claims").get("oid")
             request.session["user"] = oid
-            f_save_cache(oid, cache)
+            await f_save_cache(oid, cache)
 
         except ValueError:
             pass
