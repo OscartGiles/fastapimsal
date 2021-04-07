@@ -12,14 +12,14 @@ from .config import get_auth_settings
 AUTH_SETTINGS = get_auth_settings()
 
 
-def default_load_cache() -> None:
+def default_load_cache(oid: Optional[str] = None) -> None:
     "Function that returns None"
 
     return None
 
 
 # pylint: disable=W0613
-def default_save_cache(cache: Optional[msal.SerializableTokenCache]) -> None:
+def default_save_cache(oid: str, cache: Optional[msal.SerializableTokenCache]) -> None:
     return None
 
 
@@ -27,10 +27,10 @@ def init_auth(
     app: FastAPI,
     home_name: str = "home",
     f_load_cache: Callable[
-        [], Optional[msal.SerializableTokenCache]
+        [str], Optional[msal.SerializableTokenCache]
     ] = default_load_cache,
     f_save_cache: Callable[
-        [Optional[msal.SerializableTokenCache]], None
+        [str, Optional[msal.SerializableTokenCache]], None
     ] = default_save_cache,
 ) -> None:
     """Initialise the auth

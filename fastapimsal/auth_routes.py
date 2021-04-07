@@ -45,22 +45,22 @@ class UserLoggedValidated:
 
     def __init__(
         self,
-        f_load_cache: Callable[[], Optional[msal.SerializableTokenCache]],
-        f_save_cache: Callable[[Optional[msal.SerializableTokenCache]], None],
+        f_load_cache: Callable[[str], Optional[msal.SerializableTokenCache]],
+        f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None],
     ):
 
         self.f_load_cache = f_load_cache
         self.f_save_cache = f_save_cache
 
     def get_token_from_cache(
-        self, scope: Optional[List[str]] = None
+        self, oid, scope: Optional[List[str]] = None
     ) -> Optional[Dict[Any, Any]]:
-        cache = self.f_load_cache()  # This web app maintains one cache per session
+        cache = self.f_load_cache(oid)  # This web app maintains one cache per session
         cca = build_msal_app(cache=cache)
         accounts = cca.get_accounts()
         if accounts:  # So all account(s) belong to the current signed-in user
             result = cca.acquire_token_silent(scope, account=accounts[0])
-            self.f_save_cache(cache)
+            self.f_save_cache(oid, cache)
             return result
 
         return None
@@ -69,7 +69,7 @@ class UserLoggedValidated:
 
         oid = request.session.get("user", None)
         if oid:
-            token = self.get_token_from_cache()
+            token = self.get_token_from_cache(oid)
             # ToDo: Do I need to validate the token again?
             if token:
                 return oid
@@ -78,8 +78,8 @@ class UserLoggedValidated:
 
 @lru_cache()
 def f_logged_in(
-    f_load_cache: Callable[[], Optional[msal.SerializableTokenCache]] = None,
-    f_save_cache: Callable[[Optional[msal.SerializableTokenCache]], None] = None,
+    f_load_cache: Callable[[str], Optional[msal.SerializableTokenCache]] = None,
+    f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None] = None,
     validate: bool = False,
 ) -> Union[UserLoggedValidated, UserLogged]:
 
@@ -95,8 +95,8 @@ def f_logged_in(
 
 
 def create_auth_router(
-    f_load_cache: Callable[[], Optional[msal.SerializableTokenCache]],
-    f_save_cache: Callable[[Optional[msal.SerializableTokenCache]], None],
+    f_load_cache: Callable[[Optional[str]], Optional[msal.SerializableTokenCache]],
+    f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None],
 ) -> APIRouter:
 
     router = APIRouter()
@@ -142,14 +142,15 @@ def create_auth_router(
         # see https://github.com/Azure-Samples/ms-identity-python-webapp/blob/e342e93a2a7e0cc4d4955c20660e6a81fd2536c5/app.py#L35-L45
         # for try except pattern. Kind of annoying, means you may have to click sign in twice
         try:
-            cache = f_load_cache()
+            cache = f_load_cache(None)
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
                 request.session.get("flow", {}), dict(request.query_params)
             )
 
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
-            request.session["user"] = result.get("id_token_claims").get("oid")
-            f_save_cache(cache)
+            oid = result.get("id_token_claims").get("oid")
+            request.session["user"] = oid
+            f_save_cache(oid, cache)
 
         except ValueError:
             pass
