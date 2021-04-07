@@ -79,19 +79,19 @@ jobs:
 
       - name: Run mypy
         shell: bash
-        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapimsal tests
+        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapimsal tests examples
     
       - name: Run pylint
         shell: bash
-        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapimsal tests
+        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapimsal tests examples
     
       - name: Run flake8
         shell: bash
-        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapimsal tests
+        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapimsal tests examples
 
       - name: Run black
         shell: bash
-        run: python -m poetry run black fastapimsal tests --check
+        run: python -m poetry run black fastapimsal tests examples --check
       
       - name: If needed, commit black changes to the pull request
         if: failure()

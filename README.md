@@ -15,7 +15,14 @@ echo "session_expire_time_minutes=1
 session_secret=<Session-Cookie-Secret>
 client_id=<Application-client-id>
 client_secret=<Application-Client-secret>
-tenant_id=<Tenant-id" > .env
+tenant_id=<Tenant-id" > .auth.env
 ```
 
 For the `session_secret` its a good idea to create a secret with `openssl rand -hex 32`
+
+
+To run the example
+
+```bash
+poetry run uvicorn --reload --app-dir examples app:app 
+```
