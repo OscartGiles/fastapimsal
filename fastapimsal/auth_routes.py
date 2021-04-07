@@ -70,7 +70,7 @@ class UserLoggedValidated:
 
         oid = request.session.get("user", None)
         if oid:
-            token = self.get_token_from_cache(oid)
+            token = await self.get_token_from_cache(oid)
             # ToDo: Do I need to validate the token again?
             if token:
                 return oid
