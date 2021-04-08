@@ -3,7 +3,6 @@
 from functools import lru_cache
 from uuid import UUID
 
-from fastapi.requests import Request
 from pydantic import BaseSettings, HttpUrl, SecretStr
 
 
@@ -32,21 +31,3 @@ class AuthSettings(BaseSettings):
 def get_auth_settings() -> AuthSettings:
 
     return AuthSettings()
-
-
-class RequiresLoginException(Exception):
-    """Exception to raise when login required"""
-
-
-class UserLogged:
-    """Ensure user is logged in"""
-
-    async def __call__(self, request: Request) -> dict:
-
-        user = request.session.get("user", None)
-        if user:
-            return user
-        raise RequiresLoginException
-
-
-logged_in = UserLogged()

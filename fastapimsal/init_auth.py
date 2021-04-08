@@ -1,21 +1,46 @@
+import msal
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
-from .auth_routes import router as auth_router
-from .config import RequiresLoginException, get_auth_settings
+from .auth_routes import RequiresLoginException, create_auth_router
+from .config import get_auth_settings
+from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
 
 AUTH_SETTINGS = get_auth_settings()
 
 
-def init_auth(app: FastAPI, home_name: str = "home") -> None:
+# pylint: disable=W0613
+async def default_load_cache(oid: str) -> None:
+    "Function that returns None"
+
+    return None
+
+
+# pylint: disable=W0613
+async def default_save_cache(oid: str, cache: msal.SerializableTokenCache) -> None:
+    return None
+
+
+# pylint: disable=W0613
+async def default_remove_cache(oid: str) -> None:
+    return None
+
+
+def init_auth(
+    app: FastAPI,
+    home_name: str = "home",
+    f_load_cache: LoadCacheCallable = default_load_cache,
+    f_save_cache: SaveCacheCallable = default_save_cache,
+    f_remove_cache: RemoveCacheCallable = default_remove_cache,
+) -> None:
     """Initialise the auth
 
     Args:
         app (FastAPI): [description]
         home_name (str, optional): [description]. Defaults to "home".
-
+        load_cache_
     Returns:
         [type]: [description]
     """
@@ -28,7 +53,8 @@ def init_auth(app: FastAPI, home_name: str = "home") -> None:
         session_cookie="session",
     )
 
-    # Add routes for logging in and generating access token
+    # Add routes for authentiation
+    auth_router = create_auth_router(f_save_cache, f_remove_cache)
     app.include_router(auth_router, tags=["auth"])
 
     # pylint: disable=W0612

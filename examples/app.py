@@ -3,10 +3,12 @@ Basic example of authenticating users with OAuth2 using Microsoft's MSAL library
 Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms-identity-python-webapp
 """
 from typing import Union
-from fastapi import FastAPI, Depends, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+
+from fastapi import Depends, FastAPI, Request
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import HTMLResponse, JSONResponse
+
 import fastapimsal
 
 # Notice all docs are removed. We can add behind auth later
@@ -21,11 +23,12 @@ app = FastAPI(
 
 # Add session middleware and authentication routes
 fastapimsal.init_auth(app)
+logged_in = fastapimsal.f_logged_in()
 
 
 # Add home pages
 @app.get("/", include_in_schema=False)
-async def home(request: Request):
+async def home(request: Request) -> HTMLResponse:
 
     user = request.session.get("user", None)
     if not user:
@@ -39,7 +42,7 @@ async def home(request: Request):
 # Place docs behind auth
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint(
-    _: dict = Depends(fastapimsal.logged_in),
+    _: dict = Depends(logged_in),
 ) -> Union[JSONResponse, HTMLResponse]:
     """
     Serves OpenAPI endpoints
@@ -50,7 +53,7 @@ async def get_open_api_endpoint(
 
 
 @app.get("/docs", include_in_schema=False)
-async def get_documentation(_: dict = Depends(fastapimsal.logged_in)) -> HTMLResponse:
+async def get_documentation(_: dict = Depends(logged_in)) -> HTMLResponse:
     """
     Serves swagger API docs
     """
@@ -58,7 +61,9 @@ async def get_documentation(_: dict = Depends(fastapimsal.logged_in)) -> HTMLRes
 
 
 @app.get("/redoc", include_in_schema=False)
-async def get_redocumentation(_: dict = Depends(fastapimsal.logged_in)) -> HTMLResponse:
+async def get_redocumentation(
+    _: dict = Depends(logged_in),
+) -> HTMLResponse:
     """
     Serves redoc API docs
     """
