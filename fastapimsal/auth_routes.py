@@ -52,13 +52,16 @@ class UserLoggedValidated:
         self.f_save_cache = f_save_cache
 
     async def get_token_from_cache(
-        self, oid, scope: Optional[List[str]] = None
+        self, oid, scope: List[str] = None
     ) -> Optional[Dict[Any, Any]]:
         cache = await self.f_load_cache(
             oid
         )  # This web app maintains one cache per session
+        print("check", cache)
         cca = build_msal_app(cache=cache)
         accounts = cca.get_accounts()
+
+        print(scope)
         if accounts:  # So all account(s) belong to the current signed-in user
             result = cca.acquire_token_silent(scope, account=accounts[0])
             await self.f_save_cache(oid, cache)
@@ -70,7 +73,7 @@ class UserLoggedValidated:
 
         oid = request.session.get("user", None)
         if oid:
-            token = await self.get_token_from_cache(oid)
+            token = await self.get_token_from_cache(oid, [])
             # ToDo: Do I need to validate the token again?
             if token:
                 return oid
@@ -98,6 +101,7 @@ def f_logged_in(
 def create_auth_router(
     f_load_cache: Callable[[Optional[str]], Optional[msal.SerializableTokenCache]],
     f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None],
+    f_remove_cache,
 ) -> APIRouter:
 
     router = APIRouter()
@@ -150,11 +154,11 @@ def create_auth_router(
 
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
             oid = result.get("id_token_claims").get("oid")
-            request.session["user"] = oid
             await f_save_cache(oid, cache)
+            request.session["user"] = oid
 
-        except ValueError:
-            pass
+        except ValueError as e:
+            print(e)
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 
@@ -164,7 +168,9 @@ def create_auth_router(
         request: Request, _: Any = Depends(f_logged_in)
     ) -> RedirectResponse:
 
-        request.session.pop("user", None)
+        oid = request.session.pop("user", None)
+        await f_remove_cache(oid)
+
         request.session.pop("flow", None)
         return RedirectResponse(url=request.url_for("home"))
 

@@ -25,6 +25,11 @@ async def default_save_cache(
     return None
 
 
+# pylint: disable=W0613
+async def default_remove_cache(oid: str) -> None:
+    return None
+
+
 def init_auth(
     app: FastAPI,
     home_name: str = "home",
@@ -34,6 +39,7 @@ def init_auth(
     f_save_cache: Callable[
         [str, Optional[msal.SerializableTokenCache]], None
     ] = default_save_cache,
+    f_remove_cache=default_remove_cache,
 ) -> None:
     """Initialise the auth
 
@@ -54,7 +60,7 @@ def init_auth(
     )
 
     # Add routes for authentiation
-    auth_router = create_auth_router(f_load_cache, f_save_cache)
+    auth_router = create_auth_router(f_load_cache, f_save_cache, f_remove_cache)
     app.include_router(auth_router, tags=["auth"])
 
     # pylint: disable=W0612
