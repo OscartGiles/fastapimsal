@@ -2,13 +2,14 @@
 Authentication with Azure Active Directory
 """
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
+from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
 
 auth_settings = get_auth_settings()
 
@@ -43,28 +44,24 @@ class UserLoggedValidated:
     """Ensure user is logged in"""
 
     def __init__(
-        self,
-        f_load_cache: Callable[[str], Optional[msal.SerializableTokenCache]],
-        f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None],
+        self, f_load_cache: LoadCacheCallable, f_save_cache: SaveCacheCallable
     ):
 
         self.f_load_cache = f_load_cache
         self.f_save_cache = f_save_cache
 
     async def get_token_from_cache(
-        self, oid, scope: List[str] = None
+        self, oid: str, scope: List[str] = None
     ) -> Optional[Dict[Any, Any]]:
-        cache = await self.f_load_cache(
-            oid
-        )  # This web app maintains one cache per session
-        print("check", cache)
+
+        cache = await self.f_load_cache(oid)
         cca = build_msal_app(cache=cache)
         accounts = cca.get_accounts()
 
-        print(scope)
         if accounts:  # So all account(s) belong to the current signed-in user
             result = cca.acquire_token_silent(scope, account=accounts[0])
             await self.f_save_cache(oid, cache)
+            print(result)
             return result
 
         return None
@@ -82,26 +79,27 @@ class UserLoggedValidated:
 
 @lru_cache()
 def f_logged_in(
-    f_load_cache: Callable[[str], Optional[msal.SerializableTokenCache]] = None,
-    f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None] = None,
-    validate: bool = False,
+    f_load_cache: Optional[LoadCacheCallable] = None,
+    f_save_cache: Optional[SaveCacheCallable] = None,
+    validate: bool = True,
 ) -> Union[UserLoggedValidated, UserLogged]:
 
     if validate and f_load_cache and f_save_cache:
         return UserLoggedValidated(f_load_cache, f_save_cache)
 
-    if validate:
-        raise ValueError(
-            "You must provide f_load_cache and f_save_cache if validate is True"
-        )
+    if not validate:
+        return UserLogged()
 
-    return UserLogged()
+    raise ValueError(
+        "You must provide f_load_cache and f_save_cache if validate is True. "
+        "Setting validate to False will mean tokens are not cached or validated"
+        " (only session cookie used for auth)"
+    )
 
 
 def create_auth_router(
-    f_load_cache: Callable[[Optional[str]], Optional[msal.SerializableTokenCache]],
-    f_save_cache: Callable[[str, Optional[msal.SerializableTokenCache]], None],
-    f_remove_cache,
+    f_save_cache: SaveCacheCallable,
+    f_remove_cache: RemoveCacheCallable,
 ) -> APIRouter:
 
     router = APIRouter()
@@ -157,8 +155,8 @@ def create_auth_router(
             await f_save_cache(oid, cache)
             request.session["user"] = oid
 
-        except ValueError as e:
-            print(e)
+        except ValueError as error:
+            print(error)
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 
