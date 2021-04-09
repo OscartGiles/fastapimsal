@@ -61,7 +61,6 @@ class UserLoggedValidated:
         if accounts:  # So all account(s) belong to the current signed-in user
             result = cca.acquire_token_silent(scope, account=accounts[0])
             await self.f_save_cache(oid, cache)
-            print(result)
             return result
 
         return None
