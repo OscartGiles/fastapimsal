@@ -72,6 +72,6 @@ async def get_redocumentation(
 
 
 @app.get("/apipath")
-def callme(user=Depends(fastapimsal.security.token_verified)):
+def callme(user=Depends(fastapimsal.token_verified)):
     """An example API route"""
     return f"Welcome {user['preferred_username']}"
