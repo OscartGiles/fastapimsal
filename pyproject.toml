@@ -12,6 +12,7 @@ python-jose = {extras = ["cryptography"], version = "^3.2.0"}
 msal = "^1.10.0"
 itsdangerous = "^1.1.0"
 httpx = "^0.17.1"
+async_lru = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

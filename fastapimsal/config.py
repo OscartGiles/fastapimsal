@@ -28,6 +28,10 @@ class AuthSettings(BaseSettings):
     def issuer(self) -> str:
         return f"https://login.microsoftonline.com/{self.tenant_id}/v2.0"
 
+    @property
+    def token_metadata_uri(self) -> str:
+        return f"https://login.microsoftonline.com/{self.tenant_id}/v2.0/.well-known/openid-configuration"
+
     class Config:
         env_file = ".auth.env"
         env_file_encoding = "utf-8"
