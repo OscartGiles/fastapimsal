@@ -3,7 +3,7 @@ Authentication with Azure Active Directory
 """
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
-
+import logging
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -69,7 +69,7 @@ class UserLoggedValidated:
 
         oid = request.session.get("user", None)
         if oid:
-            token = await self.get_token_from_cache(oid, [])
+            token = await self.get_token_from_cache(oid, get_auth_settings().scopes)
             # ToDo: Do I need to validate the token again?
             if token:
                 return oid
@@ -119,7 +119,8 @@ def create_auth_router(
     ) -> str:
 
         flow = build_msal_app(authority=authority).initiate_auth_code_flow(
-            scopes or [], redirect_uri=_auth_uri(request)
+            scopes,
+            redirect_uri=_auth_uri(request),
         )
 
         request.session["flow"] = flow
@@ -130,7 +131,7 @@ def create_auth_router(
     @router.route("/login", include_in_schema=False)
     async def login(request: Request) -> RedirectResponse:
 
-        flow_uri = _auth_code_flow(request)
+        flow_uri = _auth_code_flow(request, scopes=get_auth_settings().scopes)
 
         return RedirectResponse(url=flow_uri, status_code=302)
 
@@ -146,16 +147,17 @@ def create_auth_router(
         try:
             cache = msal.SerializableTokenCache()
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
-                request.session.get("flow", {}), dict(request.query_params)
+                request.session.get("flow", {}),
+                dict(request.query_params),
+                scopes=get_auth_settings().scopes,
             )
 
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
             oid = result.get("id_token_claims").get("oid")
             await f_save_cache(oid, cache)
             request.session["user"] = oid
-
         except ValueError as error:
-            print(error)
+            logging.debug(f"{error}")
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 

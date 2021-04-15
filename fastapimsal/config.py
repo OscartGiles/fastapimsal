@@ -1,5 +1,6 @@
 """Configurations"""
 
+from typing import List
 from functools import lru_cache
 from uuid import UUID
 
@@ -16,11 +17,16 @@ class AuthSettings(BaseSettings):
     session_secret: SecretStr
     session_expire_time_minutes: int
     https_only: bool = True
+    scopes: List[str] = []
 
     @property
     def authority(self) -> str:
         """Makes authorized URL"""
         return self.base_url + str(self.tenant_id)
+
+    @property
+    def issuer(self) -> str:
+        return f"https://login.microsoftonline.com/{self.tenant_id}/v2.0"
 
     class Config:
         env_file = ".auth.env"
