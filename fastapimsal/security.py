@@ -13,7 +13,7 @@ from .config import get_auth_settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
-def check_issuer(issuer: str):
+def check_issuer(issuer: str) -> str:
     if issuer != get_auth_settings().issuer:
         raise HTTPException(
             status_code=401, detail=f"Unrecognised issuer {issuer} in token"
@@ -22,7 +22,7 @@ def check_issuer(issuer: str):
 
 
 @alru_cache()
-async def get_key_uri():
+async def get_key_uri() -> str:
 
     token_meta_data_uri = get_auth_settings().token_metadata_uri
     async with httpx.AsyncClient() as client:
@@ -33,7 +33,7 @@ async def get_key_uri():
 
 
 @alru_cache()
-async def get_key(key_id: str):
+async def get_key(key_id: str) -> str:
 
     key_uri = await get_key_uri()
     async with httpx.AsyncClient() as client:
@@ -112,7 +112,6 @@ class TokenVerifier:
         except JWTError:
             if self.auto_error:
                 raise credentials_exception
-            else:
-                return None
+            return None
 
         return token_decoded

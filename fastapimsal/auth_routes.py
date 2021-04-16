@@ -157,7 +157,7 @@ def create_auth_router(
             await f_save_cache(oid, cache)
             request.session["user"] = oid
         except ValueError as error:
-            logging.debug(f"{error}")
+            logging.debug("%s", error)
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 
