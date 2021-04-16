@@ -79,4 +79,4 @@ def callme(user: Dict[str, Any] = Depends(token_verified)) -> str:
     if user:
         return f"Welcome {user['preferred_username']}"
 
-    return "Welcome - you aren't authorised. You only got here because auto_error was set to False"
+    return "Welcome - you aren't authorized. You only got here because auto_error was set to False"
