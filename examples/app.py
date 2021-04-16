@@ -2,8 +2,8 @@
 Basic example of authenticating users with OAuth2 using Microsoft's MSAL library.
 Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms-identity-python-webapp
 """
-from typing import Union
 
+from typing import Union, Dict, Any
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -23,7 +23,9 @@ app = FastAPI(
 
 # Add session middleware and authentication routes
 fastapimsal.init_auth(app)
-logged_in = fastapimsal.f_logged_in()
+logged_in = fastapimsal.f_logged_in(validate=False)
+# Set auto_error=False to not raise a validation error and token will return None
+token_verified = fastapimsal.TokenVerifier(auto_error=True)
 
 
 # Add home pages
@@ -68,3 +70,13 @@ async def get_redocumentation(
     Serves redoc API docs
     """
     return get_redoc_html(openapi_url="/openapi.json", title="docs")
+
+
+@app.get("/apipath")
+def callme(user: Dict[str, Any] = Depends(token_verified)) -> str:
+    """An example API route"""
+
+    if user:
+        return f"Welcome {user['preferred_username']}"
+
+    return "Welcome - you aren't authorized. You only got here because auto_error was set to False"
