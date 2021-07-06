@@ -10,70 +10,9 @@ from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
 from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
+from .security import UserLogged, UserLoggedTokenVerified, build_msal_app
 
 auth_settings = get_auth_settings()
-
-
-class RequiresLoginException(Exception):
-    """Exception to raise when login required"""
-
-
-class UserLogged:
-    """Ensure user is logged in"""
-
-    async def __call__(self, request: Request) -> dict:
-
-        user = request.session.get("user", None)
-        if user:
-            return user
-        raise RequiresLoginException
-
-
-def build_msal_app(
-    cache: Optional[msal.SerializableTokenCache] = None, authority: str = None
-) -> msal.ConfidentialClientApplication:
-    return msal.ConfidentialClientApplication(
-        str(auth_settings.client_id),
-        authority=authority or auth_settings.authority,
-        client_credential=auth_settings.client_secret.get_secret_value(),
-        token_cache=cache,
-    )
-
-
-class UserLoggedValidated:
-    """Ensure user is logged in"""
-
-    def __init__(
-        self, f_load_cache: LoadCacheCallable, f_save_cache: SaveCacheCallable
-    ):
-
-        self.f_load_cache = f_load_cache
-        self.f_save_cache = f_save_cache
-
-    async def get_token_from_cache(
-        self, oid: str, scope: List[str] = None
-    ) -> Optional[Dict[Any, Any]]:
-
-        cache = await self.f_load_cache(oid)
-        cca = build_msal_app(cache=cache)
-        accounts = cca.get_accounts()
-
-        if accounts:  # So all account(s) belong to the current signed-in user
-            result = cca.acquire_token_silent(scope, account=accounts[0])
-            await self.f_save_cache(oid, cache)
-            return result
-
-        return None
-
-    async def __call__(self, request: Request) -> Dict:
-
-        oid = request.session.get("user", None)
-        if oid:
-            token = await self.get_token_from_cache(oid, get_auth_settings().scopes)
-            # ToDo: Do I need to validate the token again?
-            if token:
-                return oid
-        raise RequiresLoginException
 
 
 @lru_cache()
@@ -81,10 +20,25 @@ def f_logged_in(
     f_load_cache: Optional[LoadCacheCallable] = None,
     f_save_cache: Optional[SaveCacheCallable] = None,
     validate: bool = True,
-) -> Union[UserLoggedValidated, UserLogged]:
+    auto_error: bool = True,
+) -> Union[UserLoggedTokenVerified, UserLogged]:
+    """A callable to check a user is logged in.
+
+    Args:
+        f_load_cache (Optional[LoadCacheCallable], optional): [description]. Defaults to None.
+        f_save_cache (Optional[SaveCacheCallable], optional): [description]. Defaults to None.
+        validate (bool, optional): If True will silently get a token and then validates it. Defaults to True.
+        auto_error (bool, optional): Raise an exception if the token is not valid. Only functions if validate is set to tryee. Defaults to True.
+
+    Raises:
+        ValueError: [description]
+
+    Returns:
+        Union[UserLoggedTokenVerified, UserLogged]: Returns a callable. When validate True the callable will return a validated token. Otherwise returns an oid str.
+    """
 
     if validate and f_load_cache and f_save_cache:
-        return UserLoggedValidated(f_load_cache, f_save_cache)
+        return UserLoggedTokenVerified(f_load_cache, f_save_cache, auto_error)
 
     if not validate:
         return UserLogged()

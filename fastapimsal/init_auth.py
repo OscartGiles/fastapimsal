@@ -4,7 +4,8 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
-from .auth_routes import RequiresLoginException, create_auth_router
+from .auth_routes import create_auth_router
+from .security import RequiresLoginException
 from .config import get_auth_settings
 from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
 
@@ -53,7 +54,7 @@ def init_auth(
         session_cookie="session",
     )
 
-    # Add routes for authentiation
+    # Add routes for authentication
     auth_router = create_auth_router(f_save_cache, f_remove_cache)
     app.include_router(auth_router, tags=["auth"])
 
