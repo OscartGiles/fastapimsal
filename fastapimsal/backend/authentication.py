@@ -1,15 +1,14 @@
 """Authenticate a user by verifying a JWT"""
 
-from typing import Callable, Optional, Dict, List, Any
-from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
+from typing import Any, Dict, List, Optional
+
 import httpx
 from async_lru import alru_cache
-from ..config import get_auth_settings
-from ..types import LoadCacheCallable, SaveCacheCallable
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 
+from ..config import get_auth_settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 

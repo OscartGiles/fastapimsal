@@ -1,16 +1,16 @@
 """Authenticate a user using their signed session coookie"""
 
-from typing import Optional, Dict, List, Any
+from typing import Any, Dict, List, Optional
+
 from fastapi import Request
-from pydantic import BaseModel
 
 from ..config import get_auth_settings
 from ..types import (
+    LoadCacheCallable,
+    RequiresLoginException,
+    SaveCacheCallable,
     UserId,
     UserIdToken,
-    RequiresLoginException,
-    LoadCacheCallable,
-    SaveCacheCallable,
 )
 from ..utils import build_msal_app
 

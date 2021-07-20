@@ -1,7 +1,7 @@
-from typing import Callable, Awaitable, Optional, Dict, Any
+from typing import Any, Awaitable, Callable, Dict, Optional
+
 import msal
 from pydantic import BaseModel
-
 
 LoadCacheCallable = Callable[[str], Awaitable[msal.SerializableTokenCache]]
 SaveCacheCallable = Callable[[str, msal.SerializableTokenCache], Awaitable[None]]

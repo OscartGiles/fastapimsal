@@ -1,10 +1,12 @@
-from typing import Any
-import requests
 import base64
 import json
 import uuid
+from typing import Any
+
 import itsdangerous
+import requests
 from fastapi.testclient import TestClient
+
 from examples.app import app
 from fastapimsal.config import get_auth_settings
 

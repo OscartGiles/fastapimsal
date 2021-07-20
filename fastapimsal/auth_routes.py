@@ -2,16 +2,17 @@
 Add routes to a FastAPI application to handle OAuth
 """
 
-from typing import Dict, List, Optional
 import logging
+from typing import Dict, List, Optional
+
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
-from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable, UserId
-from .utils import build_msal_app
 from .frontend.authentication import UserAuthenticated
+from .types import RemoveCacheCallable, SaveCacheCallable, UserId
+from .utils import build_msal_app
 
 auth_settings = get_auth_settings()
 user_authenticated = UserAuthenticated()

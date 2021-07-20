@@ -1,5 +1,7 @@
 from typing import Optional
+
 import msal
+
 from .config import get_auth_settings
 
 
