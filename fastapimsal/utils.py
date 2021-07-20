@@ -4,7 +4,7 @@ from .config import get_auth_settings
 
 
 def build_msal_app(
-    cache: Optional[msal.SerializableTokenCache] = None, authority: str = None
+    cache: Optional[msal.SerializableTokenCache] = None, authority: Optional[str] = None
 ) -> msal.ConfidentialClientApplication:
     return msal.ConfidentialClientApplication(
         str(get_auth_settings().client_id),

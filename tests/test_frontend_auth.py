@@ -1,4 +1,4 @@
-import pytest
+from typing import Any
 import requests
 import base64
 import json
@@ -9,11 +9,13 @@ from examples.app import app
 from fastapimsal.config import get_auth_settings
 
 
-def client_frontend():
+def client_frontend() -> TestClient:
     return TestClient(app)
 
 
-def request_path(client, path: str, method: str = "get", **kwargs) -> requests.Response:
+def request_path(
+    client: TestClient, path: str, method: str = "get", **kwargs: Any
+) -> requests.Response:
 
     """Request giving the name of route function
 
@@ -39,14 +41,14 @@ def signed_session(session_secret: str) -> bytes:
     return signer.sign(payload)
 
 
-def test_home_no_cookie():
+def test_home_no_cookie() -> None:
 
     resp = request_path(client_frontend(), "home")
     assert resp.status_code == 200
     assert '<a href="/login">login</a>' in resp.content.decode()
 
 
-def test_login():
+def test_login() -> None:
 
     resp = request_path(client_frontend(), "login")
 
@@ -62,7 +64,7 @@ def test_login():
     assert "flow" in session_cookie
 
 
-def test_no_cookie():
+def test_no_cookie() -> None:
     "Check you can sign in when you have a signed session cookie, but cant if you don't"
 
     # No session cookie
@@ -70,7 +72,7 @@ def test_no_cookie():
     assert resp.status_code == 307
 
 
-def test_correct_cookie():
+def test_correct_cookie() -> None:
     # Correct session cookie
     payload = signed_session(get_auth_settings().session_secret.get_secret_value())
     resp_auth = request_path(
@@ -82,7 +84,7 @@ def test_correct_cookie():
     assert resp_auth.status_code == 200
 
 
-def test_wrong_sig():
+def test_wrong_sig() -> None:
     # Wrong session cookie
     payload = signed_session("thisisnotthesessionsecret")
     resp_no_auth = request_path(
@@ -94,9 +96,8 @@ def test_wrong_sig():
     assert resp_no_auth.status_code == 307
 
 
-def test_signed_malformed():
+def test_signed_malformed() -> None:
 
-    # Signed no
     payload = signed_session(get_auth_settings().session_secret.get_secret_value())
     resp_no_auth = request_path(
         client_frontend(),

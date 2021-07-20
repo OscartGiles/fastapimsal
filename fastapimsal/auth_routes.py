@@ -2,16 +2,16 @@
 Add routes to a FastAPI application to handle OAuth
 """
 
-from typing import List
+from typing import Dict, List, Optional
 import logging
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
-from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
+from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable, UserId
 from .utils import build_msal_app
-from .frontend.authentication import UserAuthenticated, UserId
+from .frontend.authentication import UserAuthenticated
 
 auth_settings = get_auth_settings()
 user_authenticated = UserAuthenticated()
@@ -36,16 +36,19 @@ def create_auth_router(
         return redirect_uri
 
     def _auth_code_flow(
-        request: Request, authority: str = None, scopes: List[str] = None
+        request: Request,
+        authority: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
     ) -> str:
 
-        flow = build_msal_app(authority=authority).initiate_auth_code_flow(
+        flow: Dict[str, str] = build_msal_app(
+            authority=authority
+        ).initiate_auth_code_flow(
             scopes,
             redirect_uri=_auth_uri(request),
         )
 
         request.session["flow"] = flow
-
         return flow["auth_uri"]
 
     # pylint: disable=W0612

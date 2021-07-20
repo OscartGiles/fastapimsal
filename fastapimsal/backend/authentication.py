@@ -1,6 +1,6 @@
 """Authenticate a user by verifying a JWT"""
 
-from typing import Optional, Dict, List, Any
+from typing import Callable, Optional, Dict, List, Any
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -37,7 +37,7 @@ async def verify_access_token(
         check_issuer(unverified_claims["iss"])
         decoded_key = await get_key(kid)
 
-        token_decoded = jwt.decode(
+        token_decoded: Dict[str, Any] = jwt.decode(
             token,
             decoded_key,
             algorithms=unverified_headers["alg"],
@@ -66,18 +66,19 @@ async def get_key_uri() -> str:
     async with httpx.AsyncClient() as client:
         res = await client.get(token_meta_data_uri)
 
-    key_uri = res.json()["jwks_uri"]
+    key_uri: str = res.json()["jwks_uri"]
     return key_uri
 
 
 @alru_cache()
-async def get_key(key_id: str) -> str:
+async def get_key(key_id: str) -> Dict[str, str]:
 
     key_uri = await get_key_uri()
     async with httpx.AsyncClient() as client:
         res = await client.get(key_uri)
 
-    all_keys = res.json()["keys"]
+    all_keys: List[Dict[str, str]] = res.json()["keys"]
+
     decoded_key = next(filter(lambda x: x["kid"] == key_id, all_keys), None)
 
     if not decoded_key:

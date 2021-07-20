@@ -51,7 +51,7 @@ class UserAuthenticatedToken(UserAuthenticated):
         super().__init__(auto_error=False)
 
     async def get_token_from_cache(
-        self, user: UserId, scope: List[str] = None
+        self, user: UserId, scope: Optional[List[str]] = None
     ) -> Optional[Dict[Any, Any]]:
 
         cache = await self.f_load_cache(user.oid)
@@ -59,7 +59,9 @@ class UserAuthenticatedToken(UserAuthenticated):
         accounts = cca.get_accounts()
 
         if accounts:  # So all account(s) belong to the current signed-in user
-            result = cca.acquire_token_silent(scope, account=accounts[0])
+            result: Dict[Any, Any] = cca.acquire_token_silent(
+                scope, account=accounts[0]
+            )
             await self.f_save_cache(user.oid, cache)
             return result
 
