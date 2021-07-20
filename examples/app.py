@@ -15,7 +15,7 @@ import fastapimsal
 app = FastAPI(
     title="Example Auth",
     description="Example API with Oauth2 and docs behind auth",
-    version="0.0.1",
+    version="0.1.0",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
@@ -27,6 +27,8 @@ fastapimsal.init_auth(app)
 # Get a callable which checks a user is logged in and raises an HTTPException otherwise
 # If we set auto_error=False the exception isn't raised and it returns None
 user_authenticated = fastapimsal.frontend.UserAuthenticated(auto_error=True)
+
+# Not raising an error can be useful if you want to return different content depending on whether a user is authenticated
 user_authenticated_no_error = fastapimsal.frontend.UserAuthenticated(auto_error=False)
 
 

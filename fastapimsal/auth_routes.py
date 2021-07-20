@@ -73,6 +73,9 @@ def create_auth_router(
                 scopes=get_auth_settings().scopes,
             )
 
+            # Remove flow cookie
+            request.session.pop("flow", None)
+
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
             oid = result.get("id_token_claims").get("oid")
             await f_save_cache(oid, cache)
@@ -90,9 +93,6 @@ def create_auth_router(
 
         # Remove user from cache
         await f_remove_cache(user.oid)
-
-        # Remove flow cookie
-        request.session.pop("flow", None)
 
         return RedirectResponse(url=request.url_for("home"))
 
