@@ -1,8 +1,8 @@
 """
-Authentication with Azure Active Directory
+Add routes to a FastAPI application to handle OAuth
 """
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+
+from typing import List
 import logging
 import msal
 from fastapi import APIRouter, Depends, Request
@@ -10,44 +10,11 @@ from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
 from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
-from .security import UserLogged, UserLoggedTokenVerified, build_msal_app
+from .utils import build_msal_app
+from .frontend.authentication import UserAuthenticated, UserId
 
 auth_settings = get_auth_settings()
-
-
-@lru_cache()
-def f_logged_in(
-    f_load_cache: Optional[LoadCacheCallable] = None,
-    f_save_cache: Optional[SaveCacheCallable] = None,
-    validate: bool = True,
-    auto_error: bool = True,
-) -> Union[UserLoggedTokenVerified, UserLogged]:
-    """A callable to check a user is logged in.
-
-    Args:
-        f_load_cache (Optional[LoadCacheCallable], optional): [description]. Defaults to None.
-        f_save_cache (Optional[SaveCacheCallable], optional): [description]. Defaults to None.
-        validate (bool, optional): If True will silently get a token and then validates it. Defaults to True.
-        auto_error (bool, optional): Raise an exception if the token is not valid. Only functions if validate is set to tryee. Defaults to True.
-
-    Raises:
-        ValueError: [description]
-
-    Returns:
-        Union[UserLoggedTokenVerified, UserLogged]: Returns a callable. When validate True the callable will return a validated token. Otherwise returns an oid str.
-    """
-
-    if validate and f_load_cache and f_save_cache:
-        return UserLoggedTokenVerified(f_load_cache, f_save_cache, auto_error)
-
-    if not validate:
-        return UserLogged()
-
-    raise ValueError(
-        "You must provide f_load_cache and f_save_cache if validate is True. "
-        "Setting validate to False will mean tokens are not cached or validated"
-        " (only session cookie used for auth)"
-    )
+user_authenticated = UserAuthenticated()
 
 
 def create_auth_router(
@@ -118,13 +85,15 @@ def create_auth_router(
     # pylint: disable=W0612
     @router.route("/logout", include_in_schema=False)
     async def logout(
-        request: Request, _: Any = Depends(f_logged_in)
+        request: Request, user: UserId = Depends(user_authenticated)
     ) -> RedirectResponse:
 
-        oid = request.session.pop("user", None)
-        await f_remove_cache(oid)
+        # Remove user from cache
+        await f_remove_cache(user.oid)
 
+        # Remove flow cookie
         request.session.pop("flow", None)
+
         return RedirectResponse(url=request.url_for("home"))
 
     return router

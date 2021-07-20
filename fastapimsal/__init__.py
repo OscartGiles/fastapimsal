@@ -1,8 +1,7 @@
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
-from .auth_routes import f_logged_in
 from .init_auth import init_auth
-from .security import TokenVerifier, CREDENTIALS_EXCEPTION
-from . import types
+from .types import UserIdentity, UserIdentityToken
+from . import frontend
 
-__all__ = ["init_auth", "f_logged_in", "types", "TokenVerifier"]
+__all__ = ["init_auth", "UserIdentity", "UserIdentityToken", "frontend"]
