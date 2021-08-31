@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "FastAPIMSAL"
-version = "0.1.0"
+name = "fastapimsal"
+version = "0.2.0"
 description = "Library to authenticate users using MSAL"
 authors = ["Oscar Giles <ogiles@turing.ac.uk>"]
 
