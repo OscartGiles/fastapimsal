@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from .auth_routes import RequiresLoginException, create_auth_router
 from .config import get_auth_settings
-from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
+from .types import LoadCacheCallable, RemoveCacheCallable, SaveCacheCallable
 
 AUTH_SETTINGS = get_auth_settings()
 

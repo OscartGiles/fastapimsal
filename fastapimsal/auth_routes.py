@@ -1,15 +1,16 @@
 """
 Authentication with Azure Active Directory
 """
+import logging
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
-import logging
+
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
-from .types import LoadCacheCallable, SaveCacheCallable, RemoveCacheCallable
+from .types import LoadCacheCallable, RemoveCacheCallable, SaveCacheCallable
 
 auth_settings = get_auth_settings()
 

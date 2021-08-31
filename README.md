@@ -24,5 +24,5 @@ For the `session_secret` its a good idea to create a secret with `openssl rand -
 To run the example
 
 ```bash
-poetry run uvicorn --reload --app-dir examples app:app 
+poetry run uvicorn --reload --app-dir examples app:app
 ```

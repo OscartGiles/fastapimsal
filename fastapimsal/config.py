@@ -1,7 +1,7 @@
 """Configurations"""
 
-from typing import List
 from functools import lru_cache
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseSettings, HttpUrl, SecretStr
