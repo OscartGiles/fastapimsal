@@ -6,6 +6,24 @@ Authenticate users with FastAPI using the [Microsoft MSAL Library](https://msal-
 
 ## Getting started
 
+
+### Python dependencies
+
+To get started install [Poetry](https://python-poetry.org/docs/).
+
+Then ensure all dependencies are installed:
+
+```bash
+poetry install
+```
+
+### Pre-commit
+Run to make CI-tests pass
+```bash
+poetry run pre-commit run --all-files
+```
+
+## Examples
 See [examples/app.py](examples/app.py) for a simple example.
 
 Create a `.auth.env` file:
