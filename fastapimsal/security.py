@@ -1,12 +1,13 @@
 """Validate JWT from Azure"""
 
 
-from typing import Optional, Dict
-from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from typing import Dict, Optional
+
 import httpx
 from async_lru import alru_cache
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 
 from .config import get_auth_settings
 

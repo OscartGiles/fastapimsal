@@ -2,3 +2,4 @@
 .mypy_cache
 .vscode
 .auth.env
+*.pyc

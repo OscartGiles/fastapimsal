@@ -6,6 +6,24 @@ Authenticate users with FastAPI using the [Microsoft MSAL Library](https://msal-
 
 ## Getting started
 
+
+### Python dependencies
+
+To get started install [Poetry](https://python-poetry.org/docs/).
+
+Then ensure all dependencies are installed:
+
+```bash
+poetry install
+```
+
+### Pre-commit
+Run to make CI-tests pass
+```bash
+poetry run pre-commit run --all-files
+```
+
+## Examples
 See [examples/app.py](examples/app.py) for a simple example.
 
 Create a `.auth.env` file:
@@ -24,5 +42,5 @@ For the `session_secret` its a good idea to create a secret with `openssl rand -
 To run the example
 
 ```bash
-poetry run uvicorn --reload --app-dir examples app:app 
+poetry run uvicorn --reload --app-dir examples app:app
 ```

@@ -1,18 +1,18 @@
 [tool.poetry]
-name = "FastAPIMSAL"
-version = "0.1.0"
+name = "fastapimsal"
+version = "0.2.0"
 description = "Library to authenticate users using MSAL"
 authors = ["Oscar Giles <ogiles@turing.ac.uk>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-fastapi = "^0.63.0"
 pydantic = "^1.8.1"
 python-jose = {extras = ["cryptography"], version = "^3.2.0"}
 msal = "^1.10.0"
 itsdangerous = "^1.1.0"
 httpx = "^0.17.1"
 async_lru = "^1.0.2"
+fastapi = "^0.68.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -23,6 +23,8 @@ flake8 = "^3.9.0"
 black = "^20.8b1"
 mypy = "^0.812"
 httpie-jwt-auth = "^0.4.0"
+safety = "^1.10.3"
+pre-commit = "^2.14.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

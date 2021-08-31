@@ -1,4 +1,5 @@
-from typing import Callable, Awaitable
+from typing import Awaitable, Callable
+
 import msal
 
 LoadCacheCallable = Callable[[str], Awaitable[msal.SerializableTokenCache]]
