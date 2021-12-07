@@ -2,9 +2,9 @@
 
 name: All checks and tests
 
-on: 
+on:
   pull_request:
-    branches: 
+    branches:
       - main
 
 
@@ -22,11 +22,6 @@ jobs:
     # Load all steps #
     ##################
     steps:
-
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{ github.token }}
 
       ##########################
       # Checkout the code base #
@@ -64,11 +59,6 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Ensure cache is healthy
-        if: steps.cache.outputs.cache-hit == 'true'
-        shell: bash
-        run: timeout 10s python -m poetry run pip --version || rm -rf .venv
-
       - name: Install dependencies
         shell: bash
         run: |
@@ -82,33 +72,8 @@ jobs:
           client_secret:  ${{ secrets.CLIENT_SECRET }}
           session_secret: 'imaabadasecret'
           session_expire_time_minutes: '5'
+        run: poetry run pytest
 
-        run: |
-          poetry run pytest
-
-      - name: Run mypy
-        shell: bash
-        run: python -m poetry run mypy --config-file .github/linters/.mypy.ini fastapimsal tests examples
-    
-      - name: Run pylint
-        shell: bash
-        run: python -m poetry run pylint -j 0 --rcfile=.github/linters/.python-lint fastapimsal tests examples
-    
-      - name: Run flake8
-        shell: bash
-        run: python -m poetry run flake8 --config .github/linters/.flake8 fastapimsal tests examples
-
-      - name: Run black
-        shell: bash
-        run: python -m poetry run black fastapimsal tests examples --check
-      
-      - name: If needed, commit black changes to the pull request
-        if: failure()
-        run: |
-          poetry run black fastapimsal tests
-          git config --global user.name 'autoblack'
-          git config --global user.email 'ogiles@turing.ac.uk'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-          git checkout $GITHUB_HEAD_REF
-          git commit -am "fixup: Format Python code with Black"
-          git push
+      - uses: pre-commit/action@v2.0.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

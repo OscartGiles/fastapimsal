@@ -1,7 +1,14 @@
-__version__ = "0.2.0"
+try:
+    from importlib.metadata import version  # type: ignore
 
-from . import frontend
+    __version__ = version("fastapimsal")
+except ImportError:
+    import pkg_resources
+
+    __version__ = pkg_resources.get_distribution("fastapimsal").version
+
+from . import backend, frontend
 from .init_auth import init_auth
 from .types import UserIdentity, UserIdentityToken
 
-__all__ = ["init_auth", "UserIdentity", "UserIdentityToken", "frontend"]
+__all__ = ["init_auth", "UserIdentity", "UserIdentityToken", "frontend", "backend"]

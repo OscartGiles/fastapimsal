@@ -4,6 +4,7 @@ Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms
 """
 
 from typing import Union
+
 from fastapi import Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
