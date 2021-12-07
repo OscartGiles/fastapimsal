@@ -5,10 +5,10 @@ Closely based on this Azure sample for Flask https://github.com/Azure-Samples/ms
 
 from typing import Union
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 import fastapimsal
 
@@ -88,3 +88,34 @@ async def get_redocumentation(
 #         return f"Welcome {user['preferred_username']}"
 
 #     return "Welcome - you aren't authorized. You only got here because auto_error was set to False"
+
+
+# @app.get("/logout", include_in_schema=False)
+# async def logout(
+#     user: fastapimsal.UserIdentity = Depends(user_authenticated),
+# ) -> HTMLResponse:
+#     """
+#     Serves redoc API docs
+#     """
+
+#     print(user)
+#     return get_redoc_html(openapi_url="/openapi.json", title="docs")
+
+
+# @app.route("/logout", include_in_schema=False)
+# async def logout(
+#     request: Request,
+#     user: fastapimsal.UserIdentity = Depends(user_authenticated),
+# ):
+
+#     # Remove user from cache
+#     print(user)
+#     # print("This uses = ", user.oid)
+#     if user:
+#         pass
+#     # return ""
+#     # return get_redoc_html(openapi_url="/openapi.json", title="docs")
+#     return RedirectResponse(url=request.url_for("home"))
+
+
+# return router

@@ -10,7 +10,7 @@ from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
 from .frontend.authentication import UserAuthenticated
-from .types import RemoveCacheCallable, SaveCacheCallable, UserId
+from .types import RemoveCacheCallable, SaveCacheCallable, UserIdentity
 from .utils import build_msal_app
 
 auth_settings = get_auth_settings()
@@ -47,7 +47,6 @@ def create_auth_router(
             scopes,
             redirect_uri=_auth_uri(request),
         )
-
         request.session["flow"] = flow
         return flow["auth_uri"]
 
@@ -70,8 +69,10 @@ def create_auth_router(
         # for try except pattern. Kind of annoying, means you may have to click sign in twice
         try:
             cache = msal.SerializableTokenCache()
+
+            flow = request.session.get("flow", {})
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
-                request.session.get("flow", {}),
+                flow,
                 dict(request.query_params),
                 scopes=get_auth_settings().scopes,
             )
@@ -88,14 +89,20 @@ def create_auth_router(
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 
-    # pylint: disable=W0612
-    @router.route("/logout", include_in_schema=False)
+    @router.get("/logout", include_in_schema=False)
     async def logout(
-        request: Request, user: UserId = Depends(user_authenticated)
+        request: Request,
+        user: UserIdentity = Depends(user_authenticated),
     ) -> RedirectResponse:
-
+        """Remove the user from the cache and pop the session cookie.
+        Does not sign out of Microsoft
+        """
         # Remove user from cache
-        await f_remove_cache(user.oid)
+        if user:
+            await f_remove_cache(user.oid)
+
+        # Remove their session cookie
+        request.session.pop("user", None)
 
         return RedirectResponse(url=request.url_for("home"))
 
