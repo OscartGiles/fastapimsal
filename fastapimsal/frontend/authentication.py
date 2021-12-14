@@ -48,7 +48,7 @@ class UserAuthenticatedToken(UserAuthenticated):
         self.f_save_cache = f_save_cache
         self.auto_error = auto_error
 
-        super().__init__(auto_error=False)
+        super().__init__(auto_error=auto_error)
 
     async def get_token_from_cache(
         self, user: UserId, scope: Optional[List[str]] = None
