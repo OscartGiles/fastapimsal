@@ -7,10 +7,8 @@ except ImportError:
 
     __version__ = pkg_resources.get_distribution("fastapimsal").version
 
-
-from . import types
-from .auth_routes import f_logged_in
+from . import backend, frontend
 from .init_auth import init_auth
-from .security import TokenVerifier
+from .types import UserIdentity, UserIdentityToken
 
-__all__ = ["init_auth", "f_logged_in", "types", "TokenVerifier"]
+__all__ = ["init_auth", "UserIdentity", "UserIdentityToken", "frontend", "backend"]

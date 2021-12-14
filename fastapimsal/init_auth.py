@@ -4,9 +4,14 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
-from .auth_routes import RequiresLoginException, create_auth_router
+from .auth_routes import create_auth_router
 from .config import get_auth_settings
-from .types import LoadCacheCallable, RemoveCacheCallable, SaveCacheCallable
+from .types import (
+    LoadCacheCallable,
+    RemoveCacheCallable,
+    RequiresLoginException,
+    SaveCacheCallable,
+)
 
 AUTH_SETTINGS = get_auth_settings()
 
@@ -35,7 +40,7 @@ def init_auth(
     f_save_cache: SaveCacheCallable = default_save_cache,
     f_remove_cache: RemoveCacheCallable = default_remove_cache,
 ) -> None:
-    """Initialise the auth
+    """Add routes for Microsoft identity platform and session middleware
 
     Args:
         app (FastAPI): [description]
@@ -53,7 +58,7 @@ def init_auth(
         session_cookie="session",
     )
 
-    # Add routes for authentiation
+    # Add routes for authentication
     auth_router = create_auth_router(f_save_cache, f_remove_cache)
     app.include_router(auth_router, tags=["auth"])
 
@@ -62,5 +67,5 @@ def init_auth(
     async def exception_handler(
         request: Request, _: RequiresLoginException
     ) -> Response:
-        "An exception with redirects to login"
+        "Redirect to homepage if login fails"
         return RedirectResponse(url=request.url_for(home_name))

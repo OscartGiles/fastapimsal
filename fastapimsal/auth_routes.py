@@ -1,100 +1,20 @@
 """
-Authentication with Azure Active Directory
+Add routes to a FastAPI application to handle OAuth
 """
 import logging
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import msal
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from .config import get_auth_settings
-from .types import LoadCacheCallable, RemoveCacheCallable, SaveCacheCallable
+from .frontend.authentication import UserAuthenticated
+from .types import RemoveCacheCallable, SaveCacheCallable, UserIdentity
+from .utils import build_msal_app
 
 auth_settings = get_auth_settings()
-
-
-class RequiresLoginException(Exception):
-    """Exception to raise when login required"""
-
-
-class UserLogged:
-    """Ensure user is logged in"""
-
-    async def __call__(self, request: Request) -> dict:
-
-        user = request.session.get("user", None)
-        if user:
-            return user
-        raise RequiresLoginException
-
-
-def build_msal_app(
-    cache: Optional[msal.SerializableTokenCache] = None, authority: str = None
-) -> msal.ConfidentialClientApplication:
-    return msal.ConfidentialClientApplication(
-        str(auth_settings.client_id),
-        authority=authority or auth_settings.authority,
-        client_credential=auth_settings.client_secret.get_secret_value(),
-        token_cache=cache,
-    )
-
-
-class UserLoggedValidated:
-    """Ensure user is logged in"""
-
-    def __init__(
-        self, f_load_cache: LoadCacheCallable, f_save_cache: SaveCacheCallable
-    ):
-
-        self.f_load_cache = f_load_cache
-        self.f_save_cache = f_save_cache
-
-    async def get_token_from_cache(
-        self, oid: str, scope: List[str] = None
-    ) -> Optional[Dict[Any, Any]]:
-
-        cache = await self.f_load_cache(oid)
-        cca = build_msal_app(cache=cache)
-        accounts = cca.get_accounts()
-
-        if accounts:  # So all account(s) belong to the current signed-in user
-            result = cca.acquire_token_silent(scope, account=accounts[0])
-            await self.f_save_cache(oid, cache)
-            return result
-
-        return None
-
-    async def __call__(self, request: Request) -> Dict:
-
-        oid = request.session.get("user", None)
-        if oid:
-            token = await self.get_token_from_cache(oid, get_auth_settings().scopes)
-            # ToDo: Do I need to validate the token again?
-            if token:
-                return oid
-        raise RequiresLoginException
-
-
-@lru_cache()
-def f_logged_in(
-    f_load_cache: Optional[LoadCacheCallable] = None,
-    f_save_cache: Optional[SaveCacheCallable] = None,
-    validate: bool = True,
-) -> Union[UserLoggedValidated, UserLogged]:
-
-    if validate and f_load_cache and f_save_cache:
-        return UserLoggedValidated(f_load_cache, f_save_cache)
-
-    if not validate:
-        return UserLogged()
-
-    raise ValueError(
-        "You must provide f_load_cache and f_save_cache if validate is True. "
-        "Setting validate to False will mean tokens are not cached or validated"
-        " (only session cookie used for auth)"
-    )
+user_authenticated = UserAuthenticated()
 
 
 def create_auth_router(
@@ -116,16 +36,18 @@ def create_auth_router(
         return redirect_uri
 
     def _auth_code_flow(
-        request: Request, authority: str = None, scopes: List[str] = None
+        request: Request,
+        authority: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
     ) -> str:
 
-        flow = build_msal_app(authority=authority).initiate_auth_code_flow(
+        flow: Dict[str, str] = build_msal_app(
+            authority=authority
+        ).initiate_auth_code_flow(
             scopes,
             redirect_uri=_auth_uri(request),
         )
-
         request.session["flow"] = flow
-
         return flow["auth_uri"]
 
     # pylint: disable=W0612
@@ -147,11 +69,16 @@ def create_auth_router(
         # for try except pattern. Kind of annoying, means you may have to click sign in twice
         try:
             cache = msal.SerializableTokenCache()
+
+            flow = request.session.get("flow", {})
             result = build_msal_app(cache=cache).acquire_token_by_auth_code_flow(
-                request.session.get("flow", {}),
+                flow,
                 dict(request.query_params),
                 scopes=get_auth_settings().scopes,
             )
+
+            # Remove flow cookie
+            request.session.pop("flow", None)
 
             # Just store the oid (https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens) in a signed cookie
             oid = result.get("id_token_claims").get("oid")
@@ -162,16 +89,21 @@ def create_auth_router(
 
         return RedirectResponse(url=request.url_for("home"), status_code=302)
 
-    # pylint: disable=W0612
-    @router.route("/logout", include_in_schema=False)
+    @router.get("/logout", include_in_schema=False)
     async def logout(
-        request: Request, _: Any = Depends(f_logged_in)
+        request: Request,
+        user: UserIdentity = Depends(user_authenticated),
     ) -> RedirectResponse:
+        """Remove the user from the cache and pop the session cookie.
+        Does not sign out of Microsoft
+        """
+        # Remove user from cache
+        if user:
+            await f_remove_cache(user.oid)
 
-        oid = request.session.pop("user", None)
-        await f_remove_cache(oid)
+        # Remove their session cookie
+        request.session.pop("user", None)
 
-        request.session.pop("flow", None)
         return RedirectResponse(url=request.url_for("home"))
 
     return router

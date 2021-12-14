@@ -64,6 +64,16 @@ jobs:
         run: |
           python -m poetry install
 
+      - name: Run tests
+        shell: bash
+        env: # Or as an environment variable
+          client_id: ${{ secrets.CLIENT_ID }}
+          tenant_id: ${{ secrets.TENANT_ID }}
+          client_secret:  ${{ secrets.CLIENT_SECRET }}
+          session_secret: 'imaabadasecret'
+          session_expire_time_minutes: '5'
+        run: poetry run pytest
+
       - uses: pre-commit/action@v2.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
