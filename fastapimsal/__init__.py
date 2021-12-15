@@ -9,6 +9,13 @@ except ImportError:
 
 from . import backend, frontend
 from .init_auth import init_auth
-from .types import UserIdentity, UserIdentityToken
+from .types import RequiresLoginException, UserIdentity, UserIdentityToken
 
-__all__ = ["init_auth", "UserIdentity", "UserIdentityToken", "frontend", "backend"]
+__all__ = [
+    "init_auth",
+    "UserIdentity",
+    "UserIdentityToken",
+    "frontend",
+    "backend",
+    "RequiresLoginException",
+]
