@@ -1,5 +1,5 @@
 try:
-    from importlib.metadata import version  # type: ignore
+    from importlib.metadata import version
 
     __version__ = version("fastapimsal")
 except ImportError:
