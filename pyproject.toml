@@ -13,14 +13,14 @@ itsdangerous = "^1.1.0"
 httpx = "^0.22"
 async_lru = "^1.0.2"
 fastapi = "^0.75.0"
+uvicorn = {version = "^0.17.6", extras = ["standard"]}
 
 [tool.poetry.dev-dependencies]
+black = "^22.3.0"
 pytest = "^5.2"
-uvicorn = {extras = ["standard"], version = "^0.13.4"}
 isort = "^5.8.0"
 pylint = "^2.7.2"
 flake8 = "^3.9.0"
-black = "^20.8b1"
 mypy = "^0.812"
 httpie-jwt-auth = "^0.4.0"
 safety = "^1.10.3"
