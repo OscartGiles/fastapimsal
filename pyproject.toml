@@ -12,7 +12,7 @@ msal = "^1.10.0"
 itsdangerous = "^1.1.0"
 httpx = "^0.23"
 async_lru = "^1.0.2"
-fastapi = "^0.75.0"
+fastapi = "^0.92.0"
 uvicorn = {version = "^0.17.6", extras = ["standard"]}
 
 [tool.poetry.dev-dependencies]
@@ -23,7 +23,7 @@ pylint = "^2.7.2"
 flake8 = "^3.9.0"
 mypy = "^1.0.0"
 httpie-jwt-auth = "^0.4.0"
-safety = "^1.10.3"
+safety = "^2.2.0"
 pre-commit = "^2.14.1"
 
 [build-system]
