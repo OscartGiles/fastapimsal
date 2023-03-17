@@ -1,6 +1,6 @@
 ---
 
-name: All checks and tests
+name: Unit tests
 
 on:
   workflow_dispatch:
@@ -28,16 +28,13 @@ jobs:
       # Checkout the code base #
       ##########################
       - name: Checkout Code
-        uses: actions/checkout@v2
-        with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
-          fetch-depth: 0
+        uses: actions/checkout@v3
 
       ################
       # Setup Python #
       ################
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: "3.7"
 
@@ -68,12 +65,9 @@ jobs:
       - name: Run tests
         shell: bash
         env: # Or as an environment variable
-          client_id: 'e3b723f3-08a9-4895-8552-3ebfebd6f958'
-          tenant_id: 'eeb76355-f594-4e54-875b-d933451e0bd7'
+          client_id: '00000000-0000-0000-0000-000000000000'
+          tenant_id: '00000000-0000-0000-0000-000000000001'
           client_secret: 'imaabadasecret'
           session_secret: 'imaabadasecret'
           session_expire_time_minutes: '5'
         run: poetry run pytest
-
-      - name: Pre-Commit
-        uses: pre-commit/action@v2.0.3

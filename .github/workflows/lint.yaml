@@ -1,0 +1,66 @@
+---
+
+name: Pre-commit Linters
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+
+###############
+# Set the Job #
+###############
+jobs:
+
+  # Label of the runner job
+  runner-job:
+    # You must use a Linux environment when using service containers or container jobs
+    runs-on: ubuntu-latest
+
+    ##################
+    # Load all steps #
+    ##################
+    steps:
+
+      ##########################
+      # Checkout the code base #
+      ##########################
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      ################
+      # Setup Python #
+      ################
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+
+      - name: Bootstrap poetry
+        shell: bash
+        run: |
+          python -m ensurepip
+          python -m pip install --upgrade pip
+          python -m pip install poetry
+
+      - name: Configure poetry
+        shell: bash
+        run: |
+          python -m poetry config virtualenvs.in-project true
+
+      - name: Set up cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m poetry install
+
+      - name: Pre-Commit
+        uses: pre-commit/action@v2.0.3
