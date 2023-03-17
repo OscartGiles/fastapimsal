@@ -10,44 +10,34 @@ repos:
     -  id: check-added-large-files
 - repo: local
   hooks:
-    - id: system
+    - id: black
       name: Black
-      entry: poetry run black fastapimsal tests examples
-      pass_filenames: false
+      entry: poetry run black
       language: system
-- repo: local
-  hooks:
-    - id: system
+      types: ["python"]
+    - id: isort
       name: isort
-      entry: poetry run isort fastapimsal tests examples
-      pass_filenames: false
+      entry: poetry run isort
       language: system
-- repo: local
-  hooks:
-    - id: system
+      types: ["python"]
+    - id: safety
       name: Safety
       # Ignore pip vulnerability
       entry: poetry run safety check --full-report -i 40291 -i 40622 -i 42559 -i 42218
       pass_filenames: false
       language: system
-- repo: local
-  hooks:
-    - id: system
+    - id: mypy
       name: MyPy
-      entry: poetry run mypy fastapimsal tests examples
-      pass_filenames: false
+      entry: poetry run mypy --install-types --non-interactive
       language: system
-- repo: local
-  hooks:
-    - id: system
+      types: ["python"]
+    - id: pylint
       name: Pylint
-      entry: poetry run pylint --rcfile=.python-lint fastapimsal tests examples
-      pass_filenames: false
+      entry: poetry run pylint --rcfile=.python-lint
       language: system
-- repo: local
-  hooks:
-    - id: system
+      types: ["python"]
+    - id: flake8
       name: Flake8
-      entry: poetry run flake8 fastapimsal tests examples
-      pass_filenames: false
+      entry: poetry run flake8
       language: system
+      types: ["python"]
