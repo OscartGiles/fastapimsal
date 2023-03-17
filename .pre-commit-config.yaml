@@ -28,7 +28,7 @@ repos:
       language: system
     - id: mypy
       name: MyPy
-      entry: poetry run mypy
+      entry: poetry run mypy --install-types --non-interactive
       language: system
       types: ["python"]
     - id: pylint
