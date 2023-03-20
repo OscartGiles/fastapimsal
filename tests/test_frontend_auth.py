@@ -74,6 +74,9 @@ def test_no_cookie() -> None:
 
     # No session cookie
     resp = request_path(client_frontend(), "get_open_api_endpoint")
+    print("here")
+    print(resp)
+    print(list(client_frontend()))
     assert resp.status_code == 307
 
 
