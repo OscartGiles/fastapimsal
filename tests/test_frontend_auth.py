@@ -73,7 +73,9 @@ def test_no_cookie() -> None:
     "Check you can sign in when you have a signed session cookie, but cant if you don't"
 
     # No session cookie
-    resp = request_path(client_frontend(), "get_open_api_endpoint", follow_redirects=False)
+    resp = request_path(
+        client_frontend(), "get_open_api_endpoint", follow_redirects=False
+    )
     assert resp.status_code == 307
 
 
@@ -81,9 +83,11 @@ def test_correct_cookie() -> None:
     # Correct session cookie
     payload = signed_session(get_auth_settings().session_secret.get_secret_value())
     resp_auth = request_path(
-        client_frontend(cookies={"session": payload.decode("utf-8")},),
+        client_frontend(
+            cookies={"session": payload.decode("utf-8")},
+        ),
         "get_documentation",
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert resp_auth.status_code == 200
@@ -93,9 +97,11 @@ def test_wrong_cookie_signature() -> None:
     # Wrong session cookie
     payload = signed_session("thisisnotthesessionsecret")
     resp_no_auth = request_path(
-        client_frontend(cookies={"session": payload.decode("utf-8")},),
+        client_frontend(
+            cookies={"session": payload.decode("utf-8")},
+        ),
         "get_documentation",
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert resp_no_auth.status_code == 307
@@ -107,7 +113,7 @@ def test_signed_cookie_malformed() -> None:
     resp_no_auth = request_path(
         client_frontend(cookies={"hello": payload.decode("utf-8")}),
         "get_documentation",
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert resp_no_auth.status_code == 307
