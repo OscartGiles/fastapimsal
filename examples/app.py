@@ -48,7 +48,7 @@ async def home(
 
 
 # Place docs behind auth which will error
-@app.get("/openapi.json", include_in_schema=False)
+@app.get("/openapi.json", include_in_schema=False, response_model=None)
 async def get_open_api_endpoint(
     _: fastapimsal.UserIdentity = Depends(user_authenticated),
 ) -> Union[JSONResponse, HTMLResponse]:

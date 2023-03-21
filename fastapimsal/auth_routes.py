@@ -26,7 +26,7 @@ def create_auth_router(
 
     def _auth_uri(request: Request) -> str:
 
-        redirect_uri = request.url_for("authorized")
+        redirect_uri = str(request.url_for("authorized"))
 
         if "http://0.0.0.0" in redirect_uri:
             redirect_uri = redirect_uri.replace("http://0.0.0.0", "http://localhost")
