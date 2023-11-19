@@ -1,3 +1,5 @@
+# This project has moved to a fork maintained by the [Alan Turing Institute](https://github.com/alan-turing-institute/fastapimsal)
+
 # FastAPI Auth
 
 **This is a WIP and should not be used in production**
